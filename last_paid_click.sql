@@ -7,7 +7,7 @@ with last_paid as (
 
 select
     lp.visitor_id,
-    coalesce(lp.visit_date) as visit_date,
+    lp.visit_date,
     lp.source as utm_source,
     lp.medium as utm_medium,
     lp.campaign as utm_campaign,
