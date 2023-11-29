@@ -9,12 +9,12 @@ with last_click as (
 
 select
     l_c.visitor_id,
-    TO_CHAR(l_c.visit_date, 'yyyy-mm-dd HH24:MI:SS') as visit_date,
+    l_c.visit_date,
     s.source as utm_source,
     s.medium as utm_medium,
     s.campaign as utm_campaign,
     l.lead_id,
-    TO_CHAR(l.created_at, 'yyyy-mm-dd HH24:MI:SS') as created_at,
+    l.created_at,
     l.amount,
     l.closing_reason,
     l.status_id
@@ -27,8 +27,7 @@ left join leads as l
     on l_c.visitor_id = l.visitor_id
 order by
     l.amount desc nulls last,
-    visit_date asc,
+    l_c.visit_date asc,
     utm_source asc,
     utm_medium asc,
-    utm_campaign asc
-limit 10;
+    utm_campaign asc;
