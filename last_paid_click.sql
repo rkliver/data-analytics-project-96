@@ -1,23 +1,33 @@
-with last_paid as (
-    select *
+with last_click as (
+    select
+        visitor_id,
+        MAX(visit_date) as visit_date
     from sessions
     where medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
-    order by visit_date desc
+    group by visitor_id
 )
 
 select
-    lp.visitor_id,
-    lp.visit_date,
-    lp.source as utm_source,
-    lp.medium as utm_medium,
-    lp.campaign as utm_campaign,
+    l_c.visitor_id,
+    s.source as utm_source,
+    s.medium as utm_medium,
+    s.campaign as utm_campaign,
     l.lead_id,
     l.created_at,
     l.amount,
     l.closing_reason,
-    l.status_id
-from last_paid as lp
+    l.status_id,
+    TO_CHAR(l_c.visit_date, 'yyyy-mm-dd HH24:MI:SS.MS') as visit_date
+from last_click as l_c
+inner join sessions as s
+    on
+        l_c.visitor_id = s.visitor_id
+        and l_c.visit_date = s.visit_date
 left join leads as l
-    on lp.visitor_id = l.visitor_id
+    on l_c.visitor_id = l.visitor_id
 order by
-    amount desc nulls last, visit_date asc, utm_source asc, utm_medium asc, utm_campaign asc;
+    l.amount desc nulls last,
+    visit_date asc,
+    utm_source asc,
+    utm_medium asc,
+    utm_campaign asc;
