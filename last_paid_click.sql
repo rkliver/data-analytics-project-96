@@ -3,7 +3,7 @@ with last_click as (
         visitor_id,
         MAX(visit_date) as visit_date
     from sessions
-    where medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
+    where LOWER(medium) in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
     group by visitor_id
 )
 
@@ -24,7 +24,9 @@ inner join sessions as s
         l_c.visitor_id = s.visitor_id
         and l_c.visit_date = s.visit_date
 left join leads as l
-    on l_c.visitor_id = l.visitor_id
+    on
+        l_c.visitor_id = l.visitor_id
+        and l_c.visit_date <= l.created_at
 order by
     l.amount desc nulls last,
     visit_date asc,

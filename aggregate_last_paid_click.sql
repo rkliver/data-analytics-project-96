@@ -3,7 +3,7 @@ with last_click as (
         visitor_id,
         MAX(visit_date) as visit_date
     from sessions
-    where medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
+    where LOWER(medium) in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
     group by visitor_id
 ),
 
@@ -39,7 +39,7 @@ ads as (
         SUM(daily_spent) as total_cost
     from vk_ads
     group by 1, 2, 3, 4
-    union
+    union all
     select
         TO_CHAR(campaign_date, 'yyyy-mm-dd') as campaign_date,
         utm_source,
@@ -56,7 +56,7 @@ agg_tab as (
         utm_source,
         utm_medium,
         utm_campaign,
-        COUNT(visitor_id) as visitors_count,
+        COUNT(DISTINCT visitor_id) as visitors_count,
         COUNT(lead_id) as leads_count,
         COUNT(lead_id) filter (
             where
@@ -79,7 +79,7 @@ select
     ag.purchases_count,
     ag.revenue
 from agg_tab as ag
-inner join ads
+left join ads
     on
         ag.visit_date = ads.campaign_date
         and ag.utm_source = ads.utm_source
