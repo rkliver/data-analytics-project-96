@@ -71,7 +71,23 @@ agg_tab as (
 select
     ag.visit_date,
     ag.visitors_count,
-    ag.utm_source,
+    case 
+    		when ag.utm_source like 'vk%'
+    		or ag.utm_source like 'vc%'
+    		then 'vk'
+    		when ag.utm_source like '%andex%'
+    		then 'yandex'
+    		when ag.utm_source like 'twitter%'
+    		then 'twitter'
+    		when ag.utm_source like '%telegram%'
+    		or ag.utm_source like '%tg%'
+    		then 'telegram'
+    		when ag.utm_source like 'facebook%'
+    		then 'facebook'
+    		when ag.utm_source like 'zen%'
+    		then 'dzen'
+    		else ag.utm_source
+    end,
     ag.utm_medium,
     ag.utm_campaign,
     ads.total_cost,
