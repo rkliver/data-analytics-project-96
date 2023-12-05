@@ -89,7 +89,7 @@ select
             then june
     end
     as visit_date,
-    ROUND((SUM(revenue) - SUM(total_cost)) * 100 / SUM(total_cost), 2) as roi
+    round((sum(revenue) - sum(total_cost)) * 100 / sum(total_cost), 2) as roi
 from aggregate_last_paid_click
 where
     utm_source in ('vk', 'yandex')
@@ -101,23 +101,24 @@ select
     utm_source as utm_source,
     utm_medium as utm_medium,
     utm_campaign as utm_campaign,
-    COALESCE(SUM(total_cost), 0) as total_cost,
-    COALESCE(SUM(revenue), 0) as revenue,
-    COALESCE(SUM(total_cost), 0) / SUM(visitors_count) as cpu,
+    coalesce(sum(total_cost), 0) as total_cost,
+    coalesce(sum(revenue), 0) as revenue,
+    coalesce(sum(total_cost), 0) / sum(visitors_count) as cpu,
     case
-        when SUM(leads_count) = 0 then null
-        else ROUND(COALESCE(SUM(total_cost), 0) / SUM(leads_count), 2)
+        when sum(leads_count) = 0 then null
+        else round(coalesce(sum(total_cost), 0) / sum(leads_count), 2)
     end as cpl,
     case
-        when SUM(purchases_count) = 0 then null
-        else ROUND(COALESCE(SUM(total_cost), 0) / SUM(purchases_count), 2)
+        when sum(purchases_count) = 0 then null
+        else round(coalesce(sum(total_cost), 0) / sum(purchases_count), 2)
     end as cppu,
     case
-        when COALESCE(SUM(total_cost), 0) = 0 then null
-        else ROUND(
-            (COALESCE(SUM(revenue), 0) - SUM(total_cost)) * 100
+        when coalesce(sum(total_cost), 0) = 0 then null
+        else
+        round(
+            (coalesce(sum(revenue), 0) - sum(total_cost)) * 100
             /
-            SUM(total_cost), 2
+            sum(total_cost), 2
         )
     end as roi
 from aggregate_last_paid_click
@@ -132,12 +133,13 @@ select
         when visit_date between '2023-06-01' and '2023-06-30' then june
     end as visit_date,
     case
-        when COALESCE(SUM(total_cost), 0) = 0
+        when coalesce(sum(total_cost), 0) = 0
             then null
-        else ROUND(
-            (COALESCE(SUM(revenue), 0) - SUM(total_cost)) * 100
+        else
+        round(
+            (coalesce(sum(revenue), 0) - sum(total_cost)) * 100
             /
-            SUM(total_cost), 2
+            sum(total_cost), 2
         )
     end as roi
 from aggregate_last_paid_click
@@ -150,7 +152,7 @@ select
     utm_source as utm_source,
     utm_medium as utm_medium,
     utm_campaign as utm_campaign,
-    SUM(revenue) as revenue,
+    sum(revenue) as revenue,
     case
         when visit_date between '2023-06-01' and '2023-06-30'
             then june
