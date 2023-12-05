@@ -3,21 +3,22 @@ with last_click as (
         visitor_id,
         MAX(visit_date) as visit_date
     from sessions
-    where LOWER(medium) in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
+    where
+        LOWER(medium) in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
     group by visitor_id
 )
 
 select
     l_c.visitor_id,
-    TO_CHAR(l_c.visit_date, 'yyyy-mm-dd HH24:MI:SS.MS') as visit_date,
     s.source as utm_source,
     s.medium as utm_medium,
     s.campaign as utm_campaign,
     l.lead_id,
-    TO_CHAR(l.created_at, 'yyyy-mm-dd HH24:MI:SS.MS') as created_at,
     l.amount,
     l.closing_reason,
-    l.status_id
+    l.status_id,
+    TO_CHAR(l_c.visit_date, 'yyyy-mm-dd HH24:MI:SS.MS') as visit_date,
+    TO_CHAR(l.created_at, 'yyyy-mm-dd HH24:MI:SS.MS') as created_at
 from last_click as l_c
 inner join sessions as s
     on

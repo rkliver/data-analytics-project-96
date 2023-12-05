@@ -3,7 +3,8 @@ with last_click as (
         visitor_id,
         MAX(visit_date) as visit_date
     from sessions
-    where LOWER(medium) in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
+    where
+        LOWER(medium) in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
     group by visitor_id
 ),
 
@@ -38,7 +39,11 @@ ads as (
         utm_campaign,
         SUM(daily_spent) as total_cost
     from vk_ads
-    group by 1, 2, 3, 4
+    group by
+        TO_CHAR(campaign_date, 'yyyy-mm-dd'),
+        utm_source,
+        utm_medium,
+        utm_campaign
     union all
     select
         TO_CHAR(campaign_date, 'yyyy-mm-dd') as campaign_date,
@@ -47,16 +52,20 @@ ads as (
         utm_campaign,
         SUM(daily_spent) as total_cost
     from ya_ads
-    group by 1, 2, 3, 4
+    group by
+        TO_CHAR(campaign_date, 'yyyy-mm-dd'),
+        utm_source,
+        utm_medium,
+        utm_campaign
 ),
 
 agg_tab as (
     select
-        TO_CHAR(visit_date, 'yyyy-mm-dd') as visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        COUNT(DISTINCT visitor_id) as visitors_count,
+        TO_CHAR(visit_date, 'yyyy-mm-dd') as visit_date,
+        COUNT(distinct visitor_id) as visitors_count,
         COUNT(lead_id) as leads_count,
         COUNT(lead_id) filter (
             where
@@ -65,29 +74,17 @@ agg_tab as (
         ) as purchases_count,
         SUM(amount) as revenue
     from last_paid_click
-    group by 1, 2, 3, 4
+    group by
+        TO_CHAR(visit_date, 'yyyy-mm-dd'),
+        utm_source,
+        utm_medium,
+        utm_campaign
 )
 
 select
     ag.visit_date,
     ag.visitors_count,
-    case 
-    		when ag.utm_source like 'vk%'
-    		or ag.utm_source like 'vc%'
-    		then 'vk'
-    		when ag.utm_source like '%andex%'
-    		then 'yandex'
-    		when ag.utm_source like 'twitter%'
-    		then 'twitter'
-    		when ag.utm_source like '%telegram%'
-    		or ag.utm_source like '%tg%'
-    		then 'telegram'
-    		when ag.utm_source like 'facebook%'
-    		then 'facebook'
-    		when ag.utm_source like 'zen%'
-    		then 'dzen'
-    		else ag.utm_source
-    end,
+    ag.utm_source,
     ag.utm_medium,
     ag.utm_campaign,
     ads.total_cost,
