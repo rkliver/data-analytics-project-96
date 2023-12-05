@@ -115,11 +115,11 @@ select
     case
         when coalesce(sum(total_cost), 0) = 0 then null
         else
-        round(
-            (coalesce(sum(revenue), 0) - sum(total_cost)) * 100
-            /
-            sum(total_cost), 2
-        )
+            round(
+                (coalesce(sum(revenue), 0) - sum(total_cost)) * 100
+                /
+                sum(total_cost), 2
+            )
     end as roi
 from aggregate_last_paid_click
 group by 1, 2, 3;
@@ -136,11 +136,11 @@ select
         when coalesce(sum(total_cost), 0) = 0
             then null
         else
-        round(
-            (coalesce(sum(revenue), 0) - sum(total_cost)) * 100
-            /
-            sum(total_cost), 2
-        )
+            round(
+                (coalesce(sum(revenue), 0) - sum(total_cost)) * 100
+                /
+                sum(total_cost), 2
+            )
     end as roi
 from aggregate_last_paid_click
 where total_cost > 0
