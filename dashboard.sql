@@ -25,6 +25,20 @@ GROUP BY visit_date,
          utm_source
 ORDER BY "Рекламные переходы" DESC;
 
+-- Таблица "Таблица конверсий"
+SELECT utm_source AS utm_source,
+       sum(visitors_count) AS "Рекламные переходы",
+       sum(leads_count) AS "Количество лидов",
+       sum(purchases_count) AS "Количество оплат",
+       round(sum(leads_count)*100.0/sum(visitors_count), 2) AS "Конверсия из клика в лид(%)",
+       case
+           when sum(leads_count) > 0 then round(sum(purchases_count)*100.0/sum(leads_count), 2)
+           else 0.0
+       end AS "Конверсия из лида в оплату(%)"
+FROM aggregate_last_paid_click
+GROUP BY utm_source
+ORDER BY "Рекламные переходы" DESC;
+
 -- Столбатая диаграмма "Рекламные переходы по каналам (в неделю)"
 SELECT case
            when visit_date between '2023-06-01' and '2023-06-04' then '01.06-04.06'
@@ -53,20 +67,6 @@ FROM aggregate_last_paid_click
 GROUP BY utm_source
 ORDER BY "Количество лидов" DESC;
 
--- Таблица "Таблица конверсий"
-SELECT utm_source AS utm_source,
-       sum(visitors_count) AS "Рекламные переходы",
-       sum(leads_count) AS "Количество лидов",
-       sum(purchases_count) AS "Количество оплат",
-       round(sum(leads_count)*100.0/sum(visitors_count), 2) || '%' AS "Конверсия из клика в лид",
-       case
-           when sum(leads_count) > 0 then round(sum(purchases_count)*100.0/sum(leads_count), 2) || '%'
-           else 0.0 || '%'
-       end AS "Конверсия из лида в оплату"
-FROM aggregate_last_paid_click
-GROUP BY utm_source
-ORDER BY "Рекламные переходы" DESC;
-
 -- График "Затраты на рекламу по каналам"
 SELECT visit_date AS visit_date,
        utm_source AS utm_source,
@@ -82,9 +82,10 @@ SELECT case
            when visit_date between '2023-06-01' and '2023-06-30' then 'Июнь'
        end AS visit_date,
        utm_source AS utm_source,
-       ROUND((sum(revenue) - sum(total_cost)) * 100 / sum(total_cost), 2) AS "ROI"
+       ROUND((sum(revenue) - sum(total_cost)) * 100 / sum(total_cost), 2) AS "ROI(%)"
 FROM aggregate_last_paid_click
-WHERE total_cost > 0
+WHERE utm_source IN ('vk',
+                     'yandex')
 GROUP BY case
              when visit_date between '2023-06-01' and '2023-06-30' then 'Июнь'
          end,
@@ -108,10 +109,49 @@ SELECT utm_source AS utm_source,
        end AS cppu,
        case
            when COALESCE(SUM(total_cost), 0) = 0 then null
-           else ROUND((COALESCE(SUM(revenue), 0) - SUM(total_cost)) * 100 / SUM(total_cost), 2) || '%'
-       end AS roi
+           else ROUND((COALESCE(SUM(revenue), 0) - SUM(total_cost)) * 100 / SUM(total_cost), 2)
+       end AS "roi (%)"
 FROM aggregate_last_paid_click
 GROUP BY utm_source,
          utm_medium,
          utm_campaign
-ORDER BY "Затраты на рекламу" DESC;
+ORDER BY "Затраты на рекламу" DESC
+
+-- Столбатая диаграмма "ROI по каналам (%)"
+SELECT case
+           when visit_date between '2023-06-01' and '2023-06-30' then 'Июнь'
+       end AS visit_date,
+       utm_source AS utm_source,
+       utm_medium AS utm_medium,
+       utm_campaign AS utm_campaign,
+       case
+           when COALESCE(SUM(total_cost), 0) = 0 then null
+           else ROUND((COALESCE(SUM(revenue), 0) - SUM(total_cost)) * 100 / SUM(total_cost), 2)
+       end AS "ROI"
+FROM aggregate_last_paid_click
+WHERE total_cost > 0
+GROUP BY case
+             when visit_date between '2023-06-01' and '2023-06-30' then 'Июнь'
+         end,
+         utm_source,
+         utm_medium,
+         utm_campaign
+ORDER BY "ROI" DESC
+
+-- Столбатая диаграмма "Выручка по каналам"
+SELECT case
+           when visit_date between '2023-06-01' and '2023-06-30' then 'Июнь'
+       end AS "My column",
+       utm_source AS utm_source,
+       utm_medium AS utm_medium,
+       utm_campaign AS utm_campaign,
+       sum(revenue) AS "SUM(revenue)"
+FROM aggregate_last_paid_click
+WHERE revenue > 0
+GROUP BY case
+             when visit_date between '2023-06-01' and '2023-06-30' then 'Июнь'
+         end,
+         utm_source,
+         utm_medium,
+         utm_campaign
+ORDER BY "SUM(revenue)" DESC;
